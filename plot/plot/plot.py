@@ -38,4 +38,8 @@ ax_z.plot(t, z4, label='z4', color='red')
 ax_z.set_title('z')
 ax_z.set_xlabel('t')
 ax_z.set_ylabel('zi')
+ax_z.legend()
 plt.show()
+
+# save z plot
+fig_z.savefig("z.png")

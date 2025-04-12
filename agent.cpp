@@ -47,7 +47,6 @@ void Agent::UpdateController(double t) {
 //        { // test
 //            std::cout<<"Control Triggered at t = "<<t<<std::endl;
 //        }
-
         u_ = u_new_;
         u_hat_ = u_;
         last_control_time_ = t;
