@@ -10,3 +10,7 @@ add_executable(multi_agent main.cpp
         agent.cpp
         include/agent.h
 )
+add_executable(test_agent test.cpp
+        agent.cpp
+        include/agent.h
+)

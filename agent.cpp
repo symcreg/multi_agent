@@ -80,16 +80,8 @@ void Agent::UpdateSignalGenerator(double t, double dt, const std::vector<Agent> 
     auto [k2_z, k2_v] = rk4(z_ + 0.5 * dt * k1_z, v_ + 0.5 * dt * k1_v);
     auto [k3_z, k3_v] = rk4(z_ + 0.5 * dt * k2_z, v_ + 0.5 * dt * k2_v);
     auto [k4_z, k4_v] = rk4(z_ + dt * k3_z, v_ + dt * k3_v);
-//    { // test}
-//        std::cout<<"k1_z = "<<k1_z<<", k1_v = "<<k1_v<<std::endl;
-//        std::cout<<"k2_z = "<<k2_z<<", k2_v = "<<k2_v<<std::endl;
-//        std::cout<<"k3_z = "<<k3_z<<", k3_v = "<<k3_v<<std::endl;
-//        std::cout<<"k4_z = "<<k4_z<<", k4_v = "<<k4_v<<std::endl;
-//    }
     z_dot_new_ = (1.0 / 6) * (k1_z + 2 * k2_z + 2 * k3_z + k4_z);
-
     v_dot_new_ = (1.0 / 6) * (k1_v + 2 * k2_v + 2 * k3_v + k4_v);
-
     if(ShouldTriggerCommunication(t)) {
 //        { // test
 //            std::cout<<"Communication Triggered at t = "<<t<<std::endl;
