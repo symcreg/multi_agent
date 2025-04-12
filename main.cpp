@@ -66,8 +66,8 @@ int main(){
         // Output data
         file << t;
         for(int i = 0; i < N; ++i) {
+            file << "," << agents[i].y_;
             file << "," << agents[i].z_;
-//            file << "," << agents[i].y_;
         }
         file << "\n";
     }
