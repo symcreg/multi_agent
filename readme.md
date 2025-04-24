@@ -87,3 +87,91 @@ v_ += v_dot_ * dt;
 #### Agent-3
 
 仿真结果得到z是满足一致性要求的, 但是agent-3的状态输出y却没办法收敛到z3. 暂时没有找到原因.  
+
+## 理论分析
+
+### 1. 理论基础
+
+对于多智能体系统, 考虑高阶线性系统:  
+$$
+\begin{aligned}
+
+\dot{x}_i(t) &= A_ix_i(t) + B_iu_i(t), \\
+y_i(t) &= C_ix_i(t), \\
+\end{aligned}
+$$
+每个智能体具有不同的动态特性(异构).
+
+考虑最优一致性问题, 目标是设计控制器使得所有智能体的输出一致, 设计分布式控制器使得:  
+$$
+\begin{aligned}
+\lim_{t \to \infty} | y_i(t) - y_j(t) | \to 0,\\
+\lim_{t \to \infty} y_i(t) = y^* \\
+\end{aligned}
+$$
+上面第一个式子保证i-th智能体和其邻居j-th智能体的输出一致, 第二个式子保证所有智能体的输出一致.  其中$y^*$是所有智能体的输出一致性目标, 也是下列最优控制问题的解:  
+$$
+\begin{aligned}
+y^* = \arg \min_{s \in R} \sum_{i=1}^N f_i(s) \\
+\end{aligned}
+$$
+其中函数$f_i(s)$是每个智能体的局部目标函数, 由每个智能体的状态输出决定.
+
+总的来说, 论文的目标是设计一个分布式控制器, 使得所有智能体的输出一致, 并且最小化每个智能体的局部目标函数.
+
+### 2. 信号生成器设计
+
+我们期望每个agent i生成一个状态$y_i$, 使得所有的$y_i(t) \to y^*$, 其中:  
+$$
+\begin{aligned}
+y^* = \arg \min_{s \in R} \sum_{i=1}^N f_i(s) \\
+\end{aligned}
+$$
+
+#### 梯度下降
+对优化问题:  
+$$
+\min_{s \in R} \sum_{i=1}^N f_i(s)
+$$
+经典梯度下降为:  
+$$
+s_{k+1} = s_k - \alpha \nabla f(s_k)
+$$
+可以写作:  
+$$
+\dot{z} = -\alpha \sum_{i=1}^N \nabla f_i(z)
+$$
+分布式控制下, 每个agent i都可以得到局部目标函数$f_i$, 于是设计如下的控制器:  
+$$
+\dot{z}_i = -\alpha \nabla f_i(z_i) + \beta \sum_{j = 1}^{N} a_{ij} (z_i - z_j)
+$$
+上式是论文中的写法, 引入了$a_{ij}$, 也就是邻接矩阵, 使得每个agent i只和其邻居进行通信. 当agent i和j相邻时, $a_{ij} = 1$, 否则$a_{ij} = 0$. 等价于:  
+$$
+\dot{z}_i = -\alpha \nabla f_i(z_i) + \beta \sum_{j \in N_i} (z_i - z_j)
+$$
+其中$N_i$是agent i的邻居集合.
+
+上式可以看作是一个分布式的梯度下降算法, 其中第一项是agent i的局部目标函数的梯度, 驱动$z_i$向$f_i$的最小点收敛, 以满足局部最优目标, 第二项是agent i和其邻居之间的差异, 驱动$z_i$向邻居靠拢, 体现一致性的满足. 通过调整$\alpha$和$\beta$的值, 可以控制每个agent的收敛速度和一致性.
+
+#### 辅助变量
+
+上述算法对于高阶系统或复杂网络不够稳定, 在事件触发控制环境下收敛精度不高或速度慢. 于是引入辅助变量$v_i$增加一个"动量项", 使得每个agent i的控制器为:  
+$$
+\begin{aligned}
+\dot{z}_i &= -\alpha \nabla f_i(z_i) + \beta \sum_{j \in N_i} (z_i - z_j) + \sum_{j \in N_i} (v_i - v_j), \\
+\dot{v}_i &= \alpha \beta \sum_{j \in N_i} (z_i - z_j)\\
+\end{aligned}
+$$
+可以理解为, $v_i$是一个积分项, 类似于PID控制中的积分项, 用于增加系统的稳定性:  
+$$
+\dot{v}_i = \alpha \beta \sum_{j \in N_i} (z_i - z_j)
+$$
+得到
+$$
+v_i = \alpha \beta \int_0^t \sum_{j \in N_i} (z_i - z_j) dt
+$$
+$v_i - v_j$可以理解为历史中一致性误差反馈, 根据历史中邻居agent作用的大小来判断当前是要"缓一缓"还是要"加速", 从而更柔和和稳定, 快速达到一致性.  
+
+---
+github仓库:[multi_agent](https://github.com/symcreg/multi_agent)  
+博客:[multi-agent-replication](https://symc.wang/multi-agent-replication/)  

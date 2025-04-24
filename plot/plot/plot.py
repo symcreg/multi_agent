@@ -43,3 +43,4 @@ plt.show()
 
 # save z plot
 fig_z.savefig("z.png")
+fig.savefig("y.png")
