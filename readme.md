@@ -174,4 +174,4 @@ $v_i - v_j$可以理解为历史中一致性误差反馈, 根据历史中邻居a
 
 ---
 github仓库:[multi_agent](https://github.com/symcreg/multi_agent)  
-博客:[multi-agent-replication](https://symc.wang/multi-agent-replication/)  
+博客:[multi-agent-replication](https://symc.wang/2025/04/12/multi-agent-replication/)  
